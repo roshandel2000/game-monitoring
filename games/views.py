@@ -82,3 +82,34 @@ class n_best_games_by(APIView):
                 games.append(f"{selected_game} : name: {game.Name}")
 
         return Response(data={'result': f"{games},"})
+
+
+class five_best_selling_by_platform(APIView):
+    serializer_class = GamesSerialier
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        year = request.GET.get('year')
+        platform = request.GET.get('platform')
+
+        games = Games.objects.filter(Platform=platform).filter(Year=year).order_by('id')
+        result = []
+
+        for game in games[:5]:
+            result.append(f"name: {game.Name}")
+
+        return Response(data={'result': result, })
+
+
+class better_selling_games_euro_than_north(APIView):
+    serializer_class = GamesSerialier
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        games = Games.objects.filter(EU_Sales__gt=F('NA_Sales'))
+        result = []
+
+        for game in games:
+            result.append(f"name: {game.Name}")
+
+        return Response(data={'result': result, })
