@@ -247,3 +247,38 @@ class AnnualSalesOfProducers(APIView):
             'Time Span': timeSpan,
             'Sales': salesOverTimeSpan,
         })
+
+
+class AnnualSalesOfGenres(APIView):
+    serializer_class = GamesSerialier
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, fYear, lYear):
+
+        allGenres = Games.objects.values_list('Genre').distinct()
+        allGenresNames = []
+        for genre in allGenres:
+            allGenresNames.append(genre[0])
+        allSales = np.zeros((len(allGenres)))
+
+        for index, genre in enumerate(allGenresNames):
+            sale = Games.objects.filter(Genre=genre).filter(Year__lte=lYear).filter(Year__gte=fYear).aggregate(
+                sum=Sum('EU_Sales') + Sum('NA_Sales') + Sum('JP_Sales') + Sum('Other_Sales') + Sum('Global_Sales')).get(
+                'sum')
+            allSales[index] = sale
+
+        fig = plt.figure(figsize=(15, 5))
+
+        plt.bar(allGenresNames, allSales)
+
+        plt.tick_params(axis='x', colors='purple', direction='out', length=13, width=3)
+        plt.xlabel("Game Genre")
+        plt.ylabel("Amount of Sale")
+        plt.title(f"Total Sales between {fYear} and {lYear} per each Genre")
+        plt.show()
+        plt.savefig(f"Total Sales between {fYear} and {lYear} per Genre.png")
+
+        return Response(data={
+            'sales': allSales,
+            'genre': allGenresNames,
+        })
