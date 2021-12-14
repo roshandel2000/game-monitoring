@@ -1,4 +1,5 @@
 from django.urls import path
+
 from games import views as app_view
 
 urlpatterns = [
@@ -7,9 +8,8 @@ urlpatterns = [
     # 2
     path('totalsales/<int:fYear>/<int:lYear>', app_view.AnnualSales.as_view()),
     # 3: example: localhost:8000/comparisonpublisher/2006/2015/Sony Computer Entertainment Europe/Konami Digital Entertainment
-    path('comparisonpublisher/<int:fYear>/<int:lYear>/<str:fProducer>/<str:lProducer>',app_view.AnnualSalesofProducers.as_view()),
-
-
+    path('comparisonpublisher/<int:fYear>/<int:lYear>/<str:fProducer>/<str:lProducer>',
+         app_view.AnnualSalesOfProducers.as_view()),
 
     path('byrank/<int:rank>', app_view.games_by_rank.as_view()),
     path('byname/<str:name>', app_view.games_by_name.as_view()),

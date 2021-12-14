@@ -1,13 +1,15 @@
+import matplotlib.pyplot as plt
+import numpy as np
 from django.db.models import Count
+from django.db.models import F
+from django.db.models import Sum
+from matplotlib.lines import Line2D
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Sum
+
 from .models import Games
 from .serializers import GamesSerialier
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 
 
 class games_by_rank(APIView):
@@ -127,10 +129,10 @@ class ComparisonTwoGames(APIView):
         game2 = Games.objects.filter(Name=name2)
 
         NumberofCols = 5
-        twoGamesNames = [name1,name2]
+        twoGamesNames = [name1, name2]
         twoGamesCols = []
         maxNumber = 0
-        upperMargin = 5            #For Plotting
+        upperMargin = 5  # For Plotting
 
         for game in [game1, game2]:
             vars = np.zeros((NumberofCols))
@@ -138,12 +140,12 @@ class ComparisonTwoGames(APIView):
                 for g1 in game:
                     sum_to = np.array([g1.NA_Sales, g1.EU_Sales, g1.JP_Sales, g1.Other_Sales, g1.Global_Sales])
                     vars += sum_to
-            else: # In case there is only a game
-                    vars = np.array([game.get().NA_Sales, game.get().EU_Sales, game.get().JP_Sales, game.get().Other_Sales, game.get().Global_Sales])
+            else:  # In case there is only a game
+                vars = np.array([game.get().NA_Sales, game.get().EU_Sales, game.get().JP_Sales, game.get().Other_Sales,
+                                 game.get().Global_Sales])
 
             maxNumber = max(maxNumber, max(vars))
             twoGamesCols.append(vars)
-
 
         ##Plot Type 1:
         # figure, axis = plt.subplots(1, 2, constrained_layout=True, figsize=(15, 10))
@@ -168,8 +170,8 @@ class ComparisonTwoGames(APIView):
 
         plt.bar(xPos, twoGamesCols[0], color=['purple', 'orange', 'green', 'blue', 'red'])
         plt.legend(handles=legend_elements)
-        plt.bar(xPos+distanceBetweenGames, twoGamesCols[1], color=['purple', 'orange', 'green', 'blue', 'red'])
-        plt.xticks([2, distanceBetweenGames+2], [name1,name2])
+        plt.bar(xPos + distanceBetweenGames, twoGamesCols[1], color=['purple', 'orange', 'green', 'blue', 'red'])
+        plt.xticks([2, distanceBetweenGames + 2], [name1, name2])
         plt.show()
 
         return Response(data={
@@ -190,18 +192,17 @@ class AnnualSales(APIView):
     serializer_class = GamesSerialier
     permission_classes = (IsAuthenticated,)
 
-
     def get(self, request, fYear, lYear):
-        timeSpan = np.arange(fYear, lYear+1) #Since it has been defined as [)
-        salesOverTimeSpan = [None]* timeSpan.shape[0]
-        for index,year in enumerate(timeSpan):
+        timeSpan = np.arange(fYear, lYear + 1)  # Since it has been defined as [)
+        salesOverTimeSpan = [None] * timeSpan.shape[0]
+        for index, year in enumerate(timeSpan):
             salesOverTimeSpan[index] = 0
             games_sum = Games.objects.filter(Year=year).aggregate(
-                sum=Sum('EU_Sales') + Sum('NA_Sales') + Sum('JP_Sales') + Sum('Other_Sales') + Sum('Global_Sales')).get('sum')
-            if games_sum == None:
+                sum=Sum('EU_Sales') + Sum('NA_Sales') + Sum('JP_Sales') + Sum('Other_Sales') + Sum('Global_Sales')).get(
+                'sum')
+            if games_sum is None:
                 games_sum = 0
             salesOverTimeSpan[index] = games_sum
-
 
         fig = plt.figure(figsize=(10, 5))
         plt.bar(timeSpan, salesOverTimeSpan)
@@ -217,21 +218,21 @@ class AnnualSales(APIView):
         })
 
 
-class AnnualSalesofProducers(APIView):
+class AnnualSalesOfProducers(APIView):
     serializer_class = GamesSerialier
     permission_classes = (IsAuthenticated,)
 
     def get(self, request, fYear, lYear, fProducer, lProducer):
-        timeSpan = np.arange(fYear, lYear+1) #Since it has been defined as [)
+        timeSpan = np.arange(fYear, lYear + 1)  # Since it has been defined as [)
         salesOverTimeSpan = np.zeros((2, timeSpan.shape[0]))
-        for index, producer in enumerate ([fProducer, lProducer]):
-            for idx,year in enumerate(timeSpan):
-                games_sum = Games.objects.filter(Year=year, Publisher=producer).aggregate(sum=Sum('EU_Sales') + Sum('NA_Sales') + Sum('JP_Sales') + Sum('Other_Sales') + Sum('Global_Sales')).get('sum')
-                if games_sum == None: games_sum = 0
+        for index, producer in enumerate([fProducer, lProducer]):
+            for idx, year in enumerate(timeSpan):
+                games_sum = Games.objects.filter(Year=year, Publisher=producer).aggregate(
+                    sum=Sum('EU_Sales') + Sum('NA_Sales') + Sum('JP_Sales') + Sum('Other_Sales') + Sum(
+                        'Global_Sales')).get('sum')
+                if games_sum is None:
+                    games_sum = 0
                 salesOverTimeSpan[index][idx] = games_sum
-
-
-
 
         plt.plot(timeSpan, salesOverTimeSpan[0])
         plt.plot(timeSpan, salesOverTimeSpan[1])
@@ -240,9 +241,7 @@ class AnnualSalesofProducers(APIView):
         plt.ylabel("Amount of Sale")
         plt.show()
 
-
         plt.savefig(f"comparison_{fProducer}_with_{lProducer}_Anuually.png")
-
 
         return Response(data={
             'Time Span': timeSpan,
