@@ -76,11 +76,11 @@ class n_best_games_by(APIView):
         res_games = []
         games = []
         for selected_game in selected_games:
-            if which_one == "platform":
+            if which_one == "Platform":
                 res_games = Games.objects.filter(Platform=selected_game).order_by('id')
-            elif which_one == "genre":
+            elif which_one == "Genre":
                 res_games = Games.objects.filter(Genre=selected_game).order_by('id')
-            elif which_one == "year" and selected_game != 'N/A':
+            elif which_one == "Year" and selected_game != 'N/A':
                 res_games = Games.objects.filter(Year=selected_game).order_by('id')
 
             for game in res_games[:int(num)]:
@@ -94,8 +94,8 @@ class five_best_selling_by_platform(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        year = request.GET.get('year')
-        platform = request.GET.get('platform')
+        year = request.GET.get('Year')
+        platform = request.GET.get('Platform')
 
         games = Games.objects.filter(Platform=platform).filter(Year=year).order_by('id')
         result = []
