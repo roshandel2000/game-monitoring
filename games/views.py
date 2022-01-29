@@ -172,6 +172,7 @@ class ComparisonTwoGames(APIView):
         plt.legend(handles=legend_elements)
         plt.bar(xPos + distanceBetweenGames, twoGamesCols[1], color=['purple', 'orange', 'green', 'blue', 'red'])
         plt.xticks([2, distanceBetweenGames + 2], [name1, name2])
+        plt.savefig(f"comparison between {name1} and {name2}.png")
         plt.show()
 
         return Response(data={
@@ -209,8 +210,8 @@ class AnnualSales(APIView):
         plt.title(f"Culmulative Sales between {fYear} and {lYear}")
         plt.xlabel("Year")
         plt.ylabel("Amount of Sale")
-        plt.show()
         plt.savefig(f"Culmulative Sales between {fYear} and {lYear}.png")
+        plt.show()
 
         return Response(data={
             'year': timeSpan,
@@ -239,9 +240,8 @@ class AnnualSalesOfProducers(APIView):
         plt.legend([fProducer, lProducer])
         plt.xlabel("Years")
         plt.ylabel("Amount of Sale")
-        plt.show()
-
         plt.savefig(f"comparison_{fProducer}_with_{lProducer}_Anuually.png")
+        plt.show()
 
         return Response(data={
             'Time Span': timeSpan,
@@ -275,8 +275,8 @@ class AnnualSalesOfGenres(APIView):
         plt.xlabel("Game Genre")
         plt.ylabel("Amount of Sale")
         plt.title(f"Total Sales between {fYear} and {lYear} per each Genre")
-        plt.show()
         plt.savefig(f"Total Sales between {fYear} and {lYear} per Genre.png")
+        plt.show()
 
         return Response(data={
             'sales': allSales,
